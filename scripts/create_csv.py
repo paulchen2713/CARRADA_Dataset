@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 2 16:23:09 2023
+Created on Thu Mar 02 16:23:09 2023
 
 @patch:
-    2023.02.26
+    2023.03.02
     2023.04.21
 @author: Paul
 @file: create_csv.py
@@ -34,15 +34,16 @@ def create_csv(split, last):
         for i in range(split + 1, last + 1):
             print(f"{i}.jpg,{i}.txt", file=test_file)
 
+folder_number = 2
+rand_csv_folder = str(folder_number)
 
-rand_csv_folder = str(2)
 indices = [i for i in range(1, 7193 + 1)]
 def random_csv(num_train, num_test):
     print(len(indices)) # 7193
     random.shuffle(indices)
 
     with open(DATASET + f"csv_files/rand_csv/{rand_csv_folder}/" + f"train.csv", "w") as train_file:
-        for i in indices[0:num_train]:
+        for i in indices[:num_train]:
             print(f"{i}.jpg,{i}.txt", file=train_file)
 
     with open(DATASET + f"csv_files/rand_csv/{rand_csv_folder}/" + f"test.csv", "w") as test_file:
