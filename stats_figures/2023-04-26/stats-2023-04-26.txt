@@ -1,0 +1,18 @@
+--------------------------------------------------
+The stats of 2023-04-26 training: 
+--------------------------------------------------
+max mAP:  0.36460867524147034
+mean mAP: 0.2820669665932655
+
+max training loss: 59.46959686279297
+min training loss: 1.341576099395752
+
+max training loss on average: 24.546935682296752
+min training loss on average: 1.5733012755711873
+
+min training accuracy: 0.7913635969161987
+max training accuracy: 89.63908386230469
+
+min testing accuracy: 29.956649780273438
+max testing accuracy: 64.81861114501953
+--------------------------------------------------
