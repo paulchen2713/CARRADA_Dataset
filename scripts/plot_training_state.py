@@ -62,17 +62,40 @@ logs = [
     '2023-05-02-4',
     '2023-05-03-1',
     '2023-05-03-2',
+    '2023-05-04-1',
+    '2023-05-04-2',
+    '2023-05-05-1',
+    '2023-05-06-1',
+    '2023-05-07-1',
+    '2023-05-08-1',
+    '2023-05-09-1',
+    '2023-05-10-1',
+    '2023-05-11-1',
+    '2023-05-12-1',
+    '2023-05-13-1',
+    '2023-05-14-1',
+    '2023-05-15-1',
+    '2023-05-16-1',
+    '2023-05-16-2',
+    '2023-05-16-3',
+    '2023-05-16-4',
+    '2023-05-17-1',
+    '2023-05-17-2',
+    '2023-05-18-2',
+    '2023-05-18-3',
 ]
-log_index = 23
+
+log_index = len(logs) - 1
 
 weight_decay_indices = [7, 6, 5, 3]
 learning_rate_01_04 = [9, 8, 3, 10]
 learning_rate_05_08 = [11, 12, 13, 14]
 learning_rate_09_12 = [15, 16, 17, 18]
 learning_rate_13_16 = [19, 20, 21, 22]
+learning_rate_17_20 = [23, 24, 25, 26]
 
 # make sure we are using valid list subscripts
-assert log_index <= len(logs)
+assert log_index < len(logs), f"len(logs) = {len(logs)}, the 'log_index' cannot exceed {len(logs) - 1}!"
 
 # the file tree structure for the training logs:
 """
@@ -108,7 +131,27 @@ D:.
 ├─2023-04-27-2
 ├─2023-04-28-1
 ├─2023-04-28-2
-└─2023-04-28-3
+├─2023-04-28-3
+├─2023-04-29-1
+├─2023-04-29-2
+├─2023-04-30-1
+├─2023-04-30-2
+├─2023-05-01-1
+├─2023-05-01-2
+├─2023-05-01-3
+├─2023-05-02-1
+├─2023-05-02-2
+├─2023-05-02-3
+├─2023-05-02-4
+├─2023-05-03-1
+├─2023-05-03-2
+├─2023-05-04-1
+├─different-learning-rate-results-1
+├─different-learning-rate-results-2
+├─different-learning-rate-results-3
+├─different-learning-rate-results-4
+├─different-weight-decay-results
+└─training-time-comparison
 """
 
 
@@ -120,8 +163,14 @@ def get_file_content(file_name):
 def load_data(file_path):
     with open(file_path, "r", encoding="utf-8") as text_file:
         # print(f"current file: {file_path}")
+        lines = text_file.readlines()
         data = []
-        for line in text_file:
+        for line in lines:
+            # adding a bunch of line.strip() to solve "ValueError: could not convert string to float"
+            line = line.strip()
+            line = line.strip("\n")
+            line = line.strip("\t")
+            line = line.strip("\"")
             data.append(float(line))
     return data
 
@@ -152,8 +201,12 @@ test_no_obj_acc = load_data(LOG_PATH + f"test/no_object_accuracy/{curr_txt_file}
 test_obj_acc = load_data(LOG_PATH + f"test/object_accuracy/{curr_txt_file}.txt")          # store test object accuracy
 
 
-def my_plot(x, y, title, x_label, y_label, line_color, line_marker):
+def my_plot(x: list, y: list, title, x_label, y_label, line_color, line_marker, overwrite=False):
     plt.plot(x, y, color=line_color, marker=line_marker)
+
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
     
     # Initialize the store_path for all the figures, the folder_name should be the same as the log text file
     folder_name = curr_txt_file          # <class 'str'>
@@ -163,15 +216,18 @@ def my_plot(x, y, title, x_label, y_label, line_color, line_marker):
     if os.path.isdir(store_path) is False:
         print(f"creating {folder_name} folder to store the figures")
         os.makedirs(store_path)
-
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.title(title)
-    # plt.show()
-
-    # 
+    
     fig_name = f"{folder_name}-{title}.png" 
-    plt.savefig(store_path + "/" + fig_name, bbox_inches='tight') 
+    file_name = store_path + "/" + fig_name
+    if os.path.isfile(f"{file_name}") is False:
+        plt.savefig(file_name, bbox_inches='tight')
+    elif overwrite is True:
+        print(f"Note. overwriting '{fig_name}' ")
+        plt.savefig(file_name, bbox_inches='tight')
+        plt.show()
+    else:
+        print(f"Note. '{fig_name}' already exists")
+        plt.show()
     plt.clf()             # clears the entire current figure 
     plt.close(plt.gcf())  # to avoid RuntimeWarning: More than 20 figures have been opened.
 
@@ -252,8 +308,12 @@ def plot_test_results():
     )
 
 
-def print_stats(show=True):
-    if show:
+def print_stats():
+    file_path = FIG_PATH + curr_txt_file + "/"
+    file_name = file_path + f"stats-{curr_txt_file}.txt"
+    if os.path.isfile(file_name) is True:
+        print(f"Note. 'stats-{curr_txt_file}.txt' already exist")
+
         print(f"-"*50)
         print(f"The stats of {curr_txt_file} training: ")
         print(f"-"*50)
@@ -274,10 +334,8 @@ def print_stats(show=True):
         print(f"max testing accuracy: {max(test_obj_acc)}")
 
         print(f"-"*50)
-    
     else:
-        file_path = FIG_PATH + curr_txt_file + "/"
-        with open(file_path + f"stats-{curr_txt_file}.txt", "w") as txt_file:
+        with open(file_name, "w") as txt_file:
             print(f"-"*50, file=txt_file)
             print(f"The stats of {curr_txt_file} training: ", file=txt_file)
             print(f"-"*50, file=txt_file)
@@ -302,7 +360,7 @@ def print_stats(show=True):
         print(f"saving stats to {file_path} as stats-{curr_txt_file}.txt")
 
 
-def load_multiple_train_results(indices):
+def load_multiple_train_results(indices: list):
     mAP_list = []
     losses_list = []
     train_acc_list = []
@@ -324,42 +382,62 @@ def load_multiple_train_results(indices):
     return mAP_list, losses_list, train_acc_list, test_acc_list
 
 
-def plot_diff_setting(x, data, title, x_label, y_label, folder_name, mode, show=False):
-    fig_name = f"{title}-with-different-{mode}.png"
+folder_index = 6
+def plot_diff_setting(x: list, data: list, title, x_label, y_label, folder_name, mode, overwrite=False):
+    fig_name = f"{title}-with-different-{mode}"
+
     if mode == 'weight-decay':
         for i, curr in enumerate(data):
             # print(len(x), len(curr))
-            assert len(x) == len(curr)
+            assert len(x) == len(curr), f"data length mismatch: {len(x)}, {len(curr)}"
             plt.plot(x, curr, label=f"WEIGHT_DECAY = 1e-{i+1}")
     elif mode == 'learning-rate':
         for j, curr in enumerate(data):
             # print(len(x), len(curr))
-            assert len(x) == len(curr)
-            plt.plot(x, curr, label=f"LEARNING_RATE = {j+1+4+4}e-5")
+            assert len(x) == len(curr), f"data length mismatch: {len(x)}, {len(curr)}"
+            plt.plot(x, curr, label=f"LEARNING_RATE = {j+1+4*(folder_index - 1)}e-5")
     
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(fig_name)
     plt.legend()
+    
+    store_path = FIG_PATH + folder_name
+    # If the folder doesn't exist, then we create that folder 
+    if os.path.isdir(store_path) is False:
+        print(f"creating {folder_name} folder to store the figures")
+        os.makedirs(store_path)
 
-    if show:
+    file_name = store_path + "/" + fig_name
+    if os.path.isfile(f"{file_name}.png") is False:
+        plt.savefig(f"{file_name}.png", bbox_inches='tight') 
+    elif overwrite is True:
+        print(f"Note. overwriting '{fig_name}.png' ")
+        plt.savefig(f"{file_name}.png", bbox_inches='tight') 
         plt.show()
     else:
-        store_path = FIG_PATH + folder_name
-        plt.savefig(store_path + "/" + fig_name, bbox_inches='tight') 
-        plt.clf()             # clears the entire current figure 
-        plt.close(plt.gcf())  # to avoid RuntimeWarning: More than 20 figures have been opened.
+        print(f"Note. '{fig_name}.png' already exists")
+        plt.show()
+    plt.clf()             # clears the entire current figure 
+    plt.close(plt.gcf())  # to avoid RuntimeWarning: More than 20 figures have been opened.
 
-folder_index = 3
-def plot_multi_results(mode):
+
+def plot_multi_results(mode: str, overwrite=False):
+    folder_name = f""
+    if mode == 'learning-rate':
+        folder_name = f'different-{mode}-results-{folder_index}'
+    else:  # mode == 'weight-decay'
+        folder_name = f'different-{mode}-results'
+    
     plot_diff_setting(
         x=[j*test_point for j in range(1, len(mAP_list[0]) + 1)],
         data=mAP_list,
         title='mAP',
         x_label='epochs',
         y_label='Area Under the Curve',
-        folder_name=f'different-{mode}-results-{folder_index}',
+        folder_name=folder_name,
         mode=mode,
+        overwrite=overwrite,
     )
     plot_diff_setting(
         x=[j for j in range(1, len(losses_list[0]) + 1)],
@@ -367,8 +445,9 @@ def plot_multi_results(mode):
         title='losses',
         x_label='number of updates',
         y_label='loss value',
-        folder_name=f'different-{mode}-results-{folder_index}',
+        folder_name=folder_name,
         mode=mode,
+        overwrite=overwrite,
     )
     plot_diff_setting(
         x=[j for j in range(1, len(train_acc_list[0]) + 1)], 
@@ -376,8 +455,9 @@ def plot_multi_results(mode):
         title='train-accuracy', 
         x_label='epochs', 
         y_label='accuracy', 
-        folder_name=f'different-{mode}-results-{folder_index}',
+        folder_name=folder_name,
         mode=mode,
+        overwrite=overwrite,
     )
     plot_diff_setting(
         x=[j*test_point for j in range(1, len(test_acc_list[0]) + 1)], 
@@ -385,23 +465,23 @@ def plot_multi_results(mode):
         title='test-accuracy', 
         x_label='epochs', 
         y_label='accuracy', 
-        folder_name=f'different-{mode}-results-{folder_index}',
+        folder_name=folder_name,
         mode=mode,
+        overwrite=overwrite,
     )
 
 
-def plot_training_duration():
+def plot_training_duration(overwrite=False):
     time_with_diff_lr = [7.5511, 7.2838, 7.2117, 7.1383, 7.1785, 
                          7.0542, 7.1015, 6.7780, 5.5800, 5.7350, 
-                         7.0366, 7.1689, 6.8200, 5.8219, 5.5819,]
+                         7.0366, 7.1689, 6.8200, 5.8219, 5.5819,
+                         8.4758, 7.1341, 7.1676, 7.4228, 8.4733,]
     time_with_diff_wd = [7.1676, 7.7900, 6.2753, 7.2117, ]
 
-    # lr = [f"{i}" for i in range(1, len(time_with_diff_lr) + 1)]
-    # lr = [1e-5, 2e-5, 3e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5, 10e-5, 11e-5, 12e-5, 13e-5, 14e-5, ]
-    lr = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', ]
+    lr = [f"{i}" for i in range(1, len(time_with_diff_lr) + 1)]
     wd = [f'1e-{i+1}' for i in range(len(time_with_diff_wd))]
 
-    store_path = f'D:/Datasets/RADA/RD_JPG/stats_figures/training-time-comparison/'
+    store_path = FIG_PATH + f'training-time-comparison/'
 
     # plot different learning rate vs training duration
     plt.plot(lr, time_with_diff_lr)
@@ -410,8 +490,17 @@ def plot_training_duration():
     plt.ylabel('training duration (hour)')
     title1 = f'learning-rate-vs-training-duration'
     plt.title(title1)
-    # plt.show()
-    plt.savefig(store_path + f"{title1}.png", bbox_inches='tight')
+    
+    file_name = store_path + f"{title1}.png"
+    if os.path.isfile(f"{file_name}") is False:
+        plt.savefig(file_name, bbox_inches='tight')
+    elif overwrite is True:
+        print(f"Note. overwriting '{title1}.png' ")
+        plt.savefig(file_name, bbox_inches='tight')
+        plt.show()
+    else:
+        print(f"Note. '{title1}.png' already exists")
+        plt.show()
     plt.clf()             # clears the entire current figure 
     plt.close(plt.gcf())
 
@@ -421,8 +510,17 @@ def plot_training_duration():
     plt.ylabel('training duration (hour)')
     title2 = f'weight-decay-vs-training-duration'
     plt.title(title2)
-    # plt.show()
-    plt.savefig(store_path + f"{title2}.png", bbox_inches='tight')
+
+    file_name = store_path + f"{title2}.png"
+    if os.path.isfile(f"{file_name}") is False:
+        plt.savefig(file_name, bbox_inches='tight')
+    elif overwrite is True:
+        print(f"Note. overwriting '{title2}.png' ")
+        plt.savefig(file_name, bbox_inches='tight')
+        plt.show()
+    else:
+        print(f"Note. '{title2}.png' already exists")
+        plt.show()
     plt.clf()             # clears the entire current figure 
     plt.close(plt.gcf())
 
@@ -435,15 +533,13 @@ if __name__ == "__main__":
     plot_mAP()
     plot_train_results()
     plot_test_results()
-    print_stats(show=False)
+    print_stats()
 
     # mAP_list, losses_list, train_acc_list, test_acc_list = load_multiple_train_results(indices=weight_decay_indices)
-    # plot_multi_results(mode='weight-decay')
+    # plot_multi_results(mode='weight-decay', overwrite=False)
     
-    # mAP_list, losses_list, train_acc_list, test_acc_list = load_multiple_train_results(indices=learning_rate_09_12)
-    # plot_multi_results(mode='learning-rate')
+    # mAP_list, losses_list, train_acc_list, test_acc_list = load_multiple_train_results(indices=learning_rate_17_20)
+    # plot_multi_results(mode='learning-rate', overwrite=False)
     
-    # plot_training_duration()
+    # plot_training_duration(overwrite=False)
     
-
-
