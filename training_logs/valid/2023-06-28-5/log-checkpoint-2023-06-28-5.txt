@@ -1,0 +1,20 @@
+PS C:\Users\Paul\Downloads\YOLOv3> & D:/ProgramData/Anaconda3/envs/pt3.8/python.exe c:/Users/Paul/Downloads/YOLOv3/YOLOv3-CARRADA/evaluate.py
+=> Loading checkpoint
+Weights: checkpoint-2023-06-28-5.pth.tar
+Anchors:
+  tensor([[2.9562, 0.5213],
+        [2.6988, 1.1999],
+        [5.3742, 1.2090]], device='cuda:0')
+  tensor([[0.8944, 1.0192],
+        [3.3618, 0.6656],
+        [2.7534, 1.6614]], device='cuda:0')
+  tensor([[1.8096, 0.2028],
+        [1.6172, 0.5772],
+        [3.7076, 0.9412]], device='cuda:0')
+
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 911/911 [00:23<00:00, 39.29it/s] 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 911/911 [00:24<00:00, 37.34it/s] 
+mAP: 0.44007977843284607
+duration:  49.5417 sec
+
+# 2023-06-28-5  epoch: 100   duration:  4.2641 hours  WEIGHT_DECAY = 1e-4  LEARNING_RATE = 15e-5  max mAP:  0.4518  ##split 6 + smaller model-10
