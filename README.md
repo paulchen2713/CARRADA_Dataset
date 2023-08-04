@@ -1,5 +1,6 @@
 # CARRADA_Dataset
 - Preprocessed CARRADA Dataset for radar object detection task using bbox annotations
+- The bbox annotations quality of this dataset is pretty bad, I would say the semi-automatic labeling algorithm is not very helpful; most labels are inaccurate and ultimately cause a terrible mAP performance.
 
 ## Paper
 - The raw data and annotations are copied from the [carrada_dataset](https://github.com/valeoai/carrada_dataset). 
